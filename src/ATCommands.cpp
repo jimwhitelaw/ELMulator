@@ -95,7 +95,7 @@ void ATCommands::ATI() {
 // send description
 void ATCommands::ATDESC() {
     connection->writeTo(DESC);
-    connection->writeEndOK();
+    connection->writeEnd();
 }
 
 // set echoEnable 0=off 1=on
@@ -136,7 +136,7 @@ void ATCommands::ATSPx(String& cmd) {
 // set protocol
 void ATCommands::ATDPN() {
     connection->writeTo(PROTOCOL);
-    connection->writeEndOK();
+    connection->writeEnd();
 }
 
 // AT AT2 adaptative time control
