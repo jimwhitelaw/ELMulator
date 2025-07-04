@@ -65,14 +65,22 @@ public:
 
     void writeEndPidTo(char const *string);
 
+    void setCustomHeader(uint16_t header);
+    
+    void setUseCustomHeader(bool useCustomHeader);
+
+    void printHeaderIfEnabled();
+
 private:
     uint32_t baudRate; // Serial Baud Rate
+    uint16_t customHeader; // Custom header for the response
     STATUS status;     // Operation status
     bool echoEnable;   // echoEnable command after received
     bool lineFeedEnable;
     bool memoryEnabled;
     bool whiteSpacesEnabled;
     bool headersEnabled;
+    bool useCustomHeader; // Use custom header in response
 
     void setBaudRate(uint32_t rate);
 

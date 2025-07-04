@@ -8,14 +8,14 @@
  */
 
 const String deviceName = "ELMULATOR"; // Bluetooth device name to use (no pin)
-ELMulator ELMulator;
+ELMulator myELMulator;
 
 void setup()
 {
     Serial.begin(115200);
     Serial.println("Starting ELMulator...");
-    ELMulator.init(deviceName, true); // Initialize with support for all PIDs 0x00 to 0x65, providing mock data
-    ELMulator.begin();                // ELMulator will run continuously, listening for and respondng to requests
+    myELMulator.init(deviceName, true); // Initialize with support for all PIDs 0x00 to 0x65, providing mock data
+    myELMulator.begin();                // ELMulator will run continuously, listening for and respondng to requests
 }
 
 void loop() {}

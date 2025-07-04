@@ -9,39 +9,39 @@ const uint32_t odoResponse = 1234567;                          // Hardcode an od
 const String ethPercentResponse = "620052C6";
 const String dpfCloggingResponse = "6218E4C6";
 
-ELMulator ELMulator;
+ELMulator myELMulator;
 
 void setup()
 {
     Serial.begin(115200);
     Serial.println("Starting ELMulator...");
 
-    ELMulator.init(deviceName);
+    myELMulator.init(deviceName);
     // Register the specific PIDs we are going to handle.
-    // ELMulator will respond to SUPPORTED_PIDS request ("0101") with the appropriate value
+    // myELMulator will respond to SUPPORTED_PIDS request ("0101") with the appropriate value
     // indicating which PIDs it can respond to.
-    ELMulator.registerMode01Pid(ODOMETER);
-    ELMulator.registerMode01Pid(ENGINE_COOLANT_TEMP);
-    ELMulator.registerMode01Pid(ENGINE_RPM);
-    ELMulator.registerMode01Pid(MONITOR_STATUS_SINCE_DTC_CLEARED);
-    ELMulator.registerMode01Pid(INTAKE_MANIFOLD_ABS_PRESSURE);
-    ELMulator.registerMode01Pid(ENGINE_LOAD);
-    ELMulator.registerMode01Pid(VEHICLE_SPEED);
-    ELMulator.registerMode01Pid(INTAKE_AIR_TEMP);
-    ELMulator.registerMode01Pid(THROTTLE_POSITION);
+    myELMulator.registerMode01Pid(ODOMETER);
+    myELMulator.registerMode01Pid(ENGINE_COOLANT_TEMP);
+    myELMulator.registerMode01Pid(ENGINE_RPM);
+    myELMulator.registerMode01Pid(MONITOR_STATUS_SINCE_DTC_CLEARED);
+    myELMulator.registerMode01Pid(INTAKE_MANIFOLD_ABS_PRESSURE);
+    myELMulator.registerMode01Pid(ENGINE_LOAD);
+    myELMulator.registerMode01Pid(VEHICLE_SPEED);
+    myELMulator.registerMode01Pid(INTAKE_AIR_TEMP);
+    myELMulator.registerMode01Pid(THROTTLE_POSITION);
 }
 
 void loop()
 {
     /**
      * Waits for a new request from an ELM client and does some pre-processing to validate the PID and request.
-     * Non-PID requests like AT commands and SUPPORTED_PIDS queries will be handled by ELMulator automatically.
+     * Non-PID requests like AT commands and SUPPORTED_PIDS queries will be handled by myELMulator automatically.
      * PID requests will be verified as supported (registered); unsupported PIDs responded to with NO DATA response.
      * Returns true if the request is for one of the PIDS we have registered above so we can respond to it.
      */
-    if (ELMulator.readELMRequest())
+    if (myELMulator.readELMRequest())
     {
-        handlePIDRequest(ELMulator.elmRequest);
+        handlePIDRequest(myELMulator.elmRequest);
     }
 }
 
@@ -53,37 +53,37 @@ void loop()
 void handlePIDRequest(const String &request)
 {
     // Handle special case requests like MIL and DTC checks
-    if (ELMulator.isMode03(request)) // Mode 03 request == Returns (hardcoded) list current DTC codes
+    if (myELMulator.isMode03(request)) // Mode 03 request == Returns (hardcoded) list current DTC codes
     {
         if (dtcResponse.length())
         {
-            ELMulator.writeResponse(dtcResponse);
+            myELMulator.writeResponse(dtcResponse);
             return;
         }
         else
         {
             DEBUG("DTC response is empty.");
-            ELMulator.writePidNotSupported();
+            myELMulator.writePidNotSupported();
             return;
         }
     }
 
-    else if (ELMulator.isMode01MIL(request)) // Mode 0101 MIL request == Returns (hardcoded) number of current DTC codes
+    else if (myELMulator.isMode01MIL(request)) // Mode 0101 MIL request == Returns (hardcoded) number of current DTC codes
     {
         if (milResponse.length())
         {
-            ELMulator.writeResponse(milResponse);
+            myELMulator.writeResponse(milResponse);
             return;
         }
         else
         {
             DEBUG("MIL response is empty.");
-            ELMulator.writePidNotSupported();
+            myELMulator.writePidNotSupported();
             return;
         }
     }
 
-    else if (ELMulator.isMode22(request)) // Mode 0x22 (extended info) service - Mfg-dependent and not defined in OBDII spec
+    else if (myELMulator.isMode22(request)) // Mode 0x22 (extended info) service - Mfg-dependent and not defined in OBDII spec
     {
         
         Serial.print("Mode 22 PID: "); Serial.println(request.substring(2));
@@ -92,13 +92,13 @@ void handlePIDRequest(const String &request)
         {
             if (ethPercentResponse.length())
             {
-                ELMulator.writeResponse(ethPercentResponse);
+                myELMulator.writeResponse(ethPercentResponse);
                 return;
             }
             else
             {
                 DEBUG("ETH % response is empty.");
-                ELMulator.writePidNotSupported();
+                myELMulator.writePidNotSupported();
                 return;
             }
         }
@@ -107,27 +107,27 @@ void handlePIDRequest(const String &request)
         {
             if (dpfCloggingResponse.length())
             {
-                ELMulator.writeResponse(dpfCloggingResponse);
+                myELMulator.writeResponse(dpfCloggingResponse);
                 return;
             }
             else
             {
                 DEBUG("DPF Clogging response is empty.");
-                ELMulator.writePidNotSupported();
+                myELMulator.writePidNotSupported();
                 return;
             }
         }
-        ELMulator.writePidNotSupported();
+        myELMulator.writePidNotSupported();
         return;
     }
     else // Handle any other supported PID request
     {
-        uint8_t pidCode = ELMulator.getPidCode(request); // Extract the specific PID code from the request
+        uint8_t pidCode = myELMulator.getPidCode(request); // Extract the specific PID code from the request
 
         // Example response for 0x05 (Engine Coolant Temp) - returning a mock data value
         if (pidCode == ENGINE_COOLANT_TEMP)
         {
-            uint32_t sensorValue = ELMulator.getMockSensorValue();
+            uint32_t sensorValue = myELMulator.getMockSensorValue();
 
             /**
              * Response parameters:
@@ -135,22 +135,22 @@ void handlePIDRequest(const String &request)
              * numberOfBytes - the number of bytes this PID value returns (per OBDII spec), using lookup table responseBytes.
              * sensorValue - the value to return in our response; a mock value in this example.
              */
-            ELMulator.writePidResponse(request, responseBytes[pidCode], sensorValue);
+            myELMulator.writePidResponse(request, responseBytes[pidCode], sensorValue);
             return;
         }
 
         // Example response for PID 0x0C (Engine RPM) - returns a modified mock sensor value
         else if (pidCode == ENGINE_RPM)
         {
-            uint16_t rpmValue = ELMulator.getMockSensorValue() * 100; // Here we multiply the mock value provided, for a more realistic RPM number
-            ELMulator.writePidResponse(request, responseBytes[pidCode], rpmValue);
+            uint16_t rpmValue = myELMulator.getMockSensorValue() * 100; // Here we multiply the mock value provided, for a more realistic RPM number
+            myELMulator.writePidResponse(request, responseBytes[pidCode], rpmValue);
             return;
         }
 
         // Example response for PID 0xA6 (Odometer) - returns our hardcoded odometer response string
         else if (pidCode == ODOMETER)
         {
-            ELMulator.writePidResponse(request, responseBytes[pidCode], odoResponse);
+            myELMulator.writePidResponse(request, responseBytes[pidCode], odoResponse);
             return;
         }
 
@@ -158,14 +158,14 @@ void handlePIDRequest(const String &request)
         // else if (pidCode == VEHICLE_SPEED)
         // {
         //     uint32_t gpsSpeed = myGPS.speed();
-        //     ELMulator.writePidResponse(request, responseBytes[pidCode], gpsSpeed);
+        //     myELMulator.writePidResponse(request, responseBytes[pidCode], gpsSpeed);
         //     return;
         // }
 
         // Default response for any other supported PID request - returns an unmodified mock sensor value
         else
         {
-            ELMulator.writePidResponse(request, responseBytes[pidCode], ELMulator.getMockSensorValue());
+            myELMulator.writePidResponse(request, responseBytes[pidCode], myELMulator.getMockSensorValue());
             return;
         }
     }

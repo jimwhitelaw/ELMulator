@@ -42,10 +42,10 @@ private:
     void ATLx(String &x);
 
     void ATSx(String &x);
-
-    void ATHx(String &x);
-
+    void ATSHx(String &x);
     void ATSPx(String &x);
+    
+    void ATHx(String &x);
 
     void ATATx(String &cmd);
 

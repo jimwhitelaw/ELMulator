@@ -63,14 +63,30 @@ void OBDSerialComm::setToDefaults() {
     setHeaders(false);
     setLineFeeds(true);
     setMemory(false);
+    setUseCustomHeader(false);
+    setCustomHeader(NULL);
+}
+
+void OBDSerialComm::printHeaderIfEnabled() {
+    if (headersEnabled) {
+        int headerToPrint = 0x7E7; // Default header
+        if (useCustomHeader && customHeader != NULL) {
+            headerToPrint = customHeader;
+        }
+        // Format header as 3 hex chars, zero-padded, with space
+        char headerStr[5];
+        snprintf(headerStr, sizeof(headerStr), "%03X ", headerToPrint);
+        serial->print(headerStr);
+    }
 }
 
 void OBDSerialComm::writeTo(char const *response) {
+    printHeaderIfEnabled();
     serial->print(response);
 }
 
-
 void OBDSerialComm::writeTo(uint8_t cChar) {
+    printHeaderIfEnabled();
     serial->print(cChar);
 }
 

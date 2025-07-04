@@ -48,12 +48,12 @@ void ATCommands::processCommand(const String& command) {
         ATCommands::ATLx(specificCommand);
     } else if (specificCommand.startsWith("M")) {
         ATCommands::ATMx(specificCommand);
+    } else if (specificCommand.startsWith("SH")) {
+        ATCommands::ATSHx(specificCommand);
+    } else if (specificCommand.startsWith("SP")) {
+        ATCommands::ATSPx(specificCommand);
     } else if (specificCommand.startsWith("S")) {
-        if (specificCommand.startsWith("SP")) {
-            ATCommands::ATSPx(specificCommand);
-        } else {
-            ATCommands::ATSx(specificCommand);
-        }
+        ATCommands::ATSx(specificCommand);
     } else if (specificCommand.startsWith("H")) {
         ATCommands::ATHx(specificCommand);
     } else if (specificCommand.startsWith("AT")) {
@@ -119,6 +119,22 @@ void ATCommands::ATLx(String& cmd) {
 // ATSx printing spaces off=0 on=1
 void ATCommands::ATSx(String& cmd) {
     connection->setWhiteSpaces(cmd.equals("S0") ? false : true);
+    connection->writeEndOK();
+}
+
+// Set a custom header from "SHxyz" (xyz = hex)
+void ATCommands::ATSHx(String& cmd) {
+    // Remove "SH" prefix and any whitespace
+    String headerStr = cmd.substring(2);
+    headerStr.trim();
+
+    // Convert hex string to integer
+    int headerValue = (int)strtol(headerStr.c_str(), nullptr, 16);
+    // Add 8 to the parsed value as required
+    headerValue += 8;
+
+    connection->setCustomHeader(headerValue);
+    connection->setUseCustomHeader(true);
     connection->writeEndOK();
 }
 
