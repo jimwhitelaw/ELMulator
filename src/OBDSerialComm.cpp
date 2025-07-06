@@ -31,7 +31,7 @@ void OBDSerialComm::writeEnd() {
 
     // 3 - Write prompt
     writeTo(">");
-
+    headerPrintedThisResponse = false; // Reset for next response
     serial->flush();
 };
 
@@ -64,19 +64,19 @@ void OBDSerialComm::setToDefaults() {
     setLineFeeds(true);
     setMemory(false);
     setUseCustomHeader(false);
-    setCustomHeader(NULL);
+    setCustomHeader(0); // Use 0 instead of NULL
 }
 
 void OBDSerialComm::printHeaderIfEnabled() {
-    if (headersEnabled) {
-        int headerToPrint = 0x7E7; // Default header
-        if (useCustomHeader && customHeader != NULL) {
+    if (headersEnabled && !headerPrintedThisResponse) {
+        int headerToPrint = 0x7E7;
+        if (useCustomHeader && customHeader != 0) {
             headerToPrint = customHeader;
         }
-        // Format header as 3 hex chars, zero-padded, with space
         char headerStr[5];
         snprintf(headerStr, sizeof(headerStr), "%03X ", headerToPrint);
         serial->print(headerStr);
+        headerPrintedThisResponse = true;
     }
 }
 
@@ -145,6 +145,14 @@ void OBDSerialComm::setWhiteSpaces(bool status) {
 
 void OBDSerialComm::setHeaders(bool status) {
     this->headersEnabled = status;
+}
+
+void OBDSerialComm::setUseCustomHeader(bool use) {
+    this->useCustomHeader = use;
+}
+
+void OBDSerialComm::setCustomHeader(uint16_t header) {
+    this->customHeader = header;
 }
 
 void OBDSerialComm::addSpacesToResponse(const char *response, char spacedRes[]) {

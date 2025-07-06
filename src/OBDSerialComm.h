@@ -79,8 +79,9 @@ private:
     bool lineFeedEnable;
     bool memoryEnabled;
     bool whiteSpacesEnabled;
-    bool headersEnabled;
+    bool headersEnabled; // Headers enabled in response
     bool useCustomHeader; // Use custom header in response
+    bool headerPrintedThisResponse; // Flag to track if header was printed in the current response
 
     void setBaudRate(uint32_t rate);
 
